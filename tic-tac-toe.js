@@ -1,92 +1,84 @@
-import React, { useState, useEffect } from 'react';
-import './App.css';
+import React, { Component } from 'react'
+import {gameBlock} from './api'
+import {calculateWinner} from './checkWin'
 
-const initialBoard = Array(9).fill(null);
+class TicTac extends Component {
 
-const App = () => {
-  const [board, setBoard] = useState(initialBoard);
-  const [isXNext, setIsXNext] = useState(true);
-
-  const winner = calculateWinner(board);
-
-  const handleClick = (index) => {
-    if (board[index] || winner) return;
-
-    const newBoard = [...board];
-    newBoard[index] = isXNext ? 'X' : 'O';
-
-    setBoard(newBoard);
-    setIsXNext(!isXNext);
-  };
-
-  const renderSquare = (index) => {
-    return (
-      <button className="square" onClick={() => handleClick(index)}>
-        {board[index]}
-      </button>
-    );
-  };
-
-  const renderStatus = () => {
-    if (winner) {
-      return `Winner: ${winner}`;
-    } else if (board.every((square) => square !== null)) {
-      return 'Draw! No winner.';
-    } else {
-      return `Next player: ${isXNext ? 'X' : 'O'}`;
+constructor (props) {
+    super(props)
+    this.state = {
+        gameBlock,
+        current: 0
     }
-  };
+}
 
-  const resetGame = () => {
-    setBoard(initialBoard);
-    setIsXNext(true);
-  };
+addCymeriad = (index) => {
+
+    let gameBlock = this.state.gameBlock
+    let current = this.state.current
+
+    if (calculateWinner(gameBlock) === 'X' ) return
+    if (calculateWinner(gameBlock) === '0' ) return
+
+    if (gameBlock[index] === 'X') return
+    if (gameBlock[index] === '0') return
+
+
+
+    if (current % 2 === 0) {
+        gameBlock[index] = 'X'
+    } else {
+        gameBlock[index] = '0'
+    }
+
+    this.setState({gameBlock: gameBlock, current: this.state.current + 1})
+    calculateWinner(gameBlock)
+}
+
+nextPlayer = () => {
+    if (this.state.current % 2 === 0) {
+        return 'X'
+    } else {
+        return '0'
+    }
+}
+
+startGame = () => {
+
+    let gameBlock = this.state.gameBlock
+
+    for (let i = 0; i < gameBlock.length; i++) {
+        gameBlock[i] = ''
+        this.setState({gameBlock: this.state.gameBlock, current: 0})
+    }
+}
+
+
+render() {
+    const gameBlockList = this.state.gameBlock.map((item, index) => {
+        return <div onClick={this.addCymeriad.bind(null, index)} key={index} className='game__block'>{item}</div>
+    })
+
+    const winner = calculateWinner(gameBlock)
+
+    const player = this.nextPlayer()
 
   return (
-    <div className="game">
-      <div className="board">
-        <div className="status">{renderStatus()}</div>
-        <div className="board-row">
-          {renderSquare(0)}
-          {renderSquare(1)}
-          {renderSquare(2)}
+    <div>
+        <div className="game">
+            {gameBlockList}
+            <p className='win'>Победитель: {winner}</p>
+            <input onClick={this.startGame} value='Начать заново' type="button" className="start__game"/>
         </div>
-        <div className="board-row">
-          {renderSquare(3)}
-          {renderSquare(4)}
-          {renderSquare(5)}
+        <div className="nextPlayer">
+            Следующий игрок: {player}
         </div>
-        <div className="board-row">
-          {renderSquare(6)}
-          {renderSquare(7)}
-          {renderSquare(8)}
-        </div>
-      </div>
-      <button className="reset-button" onClick={resetGame}>
-        Reset Game
-      </button>
     </div>
   );
-};
+}
+}
 
-const calculateWinner = (squares) => {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-
-  for (const [a, b, c] of lines) {
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-
+export default TicTac;
   return null;
 };
 
